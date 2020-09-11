@@ -133,7 +133,7 @@ def RunJob(job_name,job):
         fh.writelines("#SBATCH -t 14-00:00:00\n")
         fh.writelines("#SBATCH --job-name=%s\n" % job_name)
         fh.writelines("#SBATCH -N 1\n")
-        fh.writelines("#SBATCH -n 32\n")
+        fh.writelines("#SBATCH -n 8\n")
         fh.writelines("#SBATCH -p SKY32M192_L\n")
         fh.writelines("#SBATCH --account=col_cmri235_uksr\n")
         fh.writelines("#SBATCH --mail-type=ALL\n")

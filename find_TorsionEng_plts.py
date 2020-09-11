@@ -48,9 +48,9 @@ def SortEnergies():
     monomer base which each contains energies files for all polymer lengths of
     this monomer base.
     """
-    cwd = os.getcwd()
+    home = os.getcwd()
     try:
-        os.mkdir(cwd+"/sorted_energies/")
+        os.mkdir(home+"/sorted_energies/")
     except:
         pass
     list_attrib = []
@@ -72,8 +72,8 @@ def SortEnergies():
         while i <= 100:
             for j in list_attrib:
                 if j[0] == r and j[2] == i:
-                    mol_name = '{}/energies_mols_{}_{}_{}_{}*.cvs'.format(cwd,j[0],j[1],j[2],j[3])
-                    dir_name = '{}/sorted_energies/allenergies_mols_{}_{}_{}/'.format(cwd,j[0],j[2],j[3])
+                    mol_name = '{}/energies_mols_{}_{}_{:02d}_{}'.format(home,j[0],j[1],j[2],j[3])
+                    dir_name = '{}/sorted_energies/allenergies_mols_{}_{:02d}_{}/'.format(home,j[0],j[2],j[3][:-4])
                     try:
                         os.mkdir(dir_name)
                     except:
@@ -104,38 +104,40 @@ def MakeTorsionPlot(energy_file):
 	plt.ylabel("energy (Hartrees)")
 	plt.title("{} torsion energy".format(mol_name))
 	plt.savefig('torsionE_plt_{}.png'.format(mol_name),dpi=300)
+	plt.close()
 
 def OverlayPlts():
-    """
-    Makes overlay plot of allenergies files in cwd.
-    """
-    cwd = os.getcwd()
-    mol_name = cwd.split('/')[-1].strip('allenergies_')
-    plt.figure()
-    gen = [x for x in os.listdir(os.getcwd()) if x.endswith('.cvs')]
-    for energy_file in gen:
-        poly_len = str(energy_file).split('_')[3]
-        edata = np.genfromtxt(fname=energy_file,delimiter=',', dtype='unicode')
-        edata=edata.astype(np.float)
+	"""
+	Makes overlay plot of allenergies files in cwd.
+	"""
+	home = os.getcwd()
+	mol_name = home.split('/')[-1].strip('allenergies_')
+	plt.figure()
+	gen = [x for x in os.listdir(os.getcwd()) if x.endswith('.cvs')]
+	for energy_file in gen:
+	    poly_len = str(energy_file).split('_')[3]
+	    edata = np.genfromtxt(fname=energy_file,delimiter=',', dtype='unicode')
+	    edata=edata.astype(np.float)
 
-        i=0
-        while i < edata.shape[0]:
-            if edata[i,0] == 0:
-                zero_energy = edata[i,1]
-            i+=1
+	    i=0
+	    while i < edata.shape[0]:
+	        if edata[i,0] == 0:
+	            zero_energy = edata[i,1]
+	        i+=1
 
-        energy_values = edata[:,1]
-        phi = edata[:,0]
+	    energy_values = edata[:,1]
+	    phi = edata[:,0]
 
-        plt.scatter(phi, energy_values-zero_energy, label=poly_len)
+	    plt.scatter(phi, energy_values-zero_energy, label=poly_len)
 
-    plt.xlim(-3, 183)
-    plt.xticks(np.linspace(start=0, stop=180, num=7))
-    plt.xlabel("dihedral angle in degrees")
-    plt.ylabel("energy (Hartrees)")
-    plt.title("{} torsion energy".format(mol_name))
-    plt.legend()
-    plt.savefig('overlay_plt_{}.png'.format(mol_name),dpi=300)
+	plt.xlim(-3, 183)
+	plt.xticks(np.linspace(start=0, stop=180, num=7))
+	plt.xlabel("dihedral angle in degrees")
+	plt.ylabel("energy (Hartrees)")
+	plt.title("{} torsion energy".format(mol_name))
+	plt.legend()
+	plt.savefig('overlay_plt_{}.png'.format(mol_name),dpi=300)
+	plt.close()
 
 def MoveFiles(destination,starts_with="",ends_with=""):
 	"""
@@ -157,19 +159,19 @@ for f in os.listdir(os.getcwd()):
 		except:
 			pass
 os.mkdir('plots')
-MoveFiles(os.path.join(cwd,'energies','plots'),ends_with='.png')
+MoveFiles(cwd+'/energies/plots/',starts_with="torsionE")
+print("Done making potential energy plots!")
 
-os.chdir(cwd)
-
+os.chdir(cwd+"/energies")
 SortEnergies()
-os.mkdir(cwd+"/overlay_plts")
-os.chdir(cwd+"/sorted_energies/")
+os.mkdir(cwd+"/energies/overlay_plts")
+os.chdir(cwd+"/energies/sorted_energies/")
 for mol in os.listdir(os.getcwd()):
     if mol.startswith("allenergies_"):
         print(mol)
-        os.chdir("{}/sorted_energies/{}".format(cwd,mol))
+        os.chdir("{}/energies/sorted_energies/{}".format(cwd,mol))
         OverlayPlts()
-        MoveFiles(cwd+"/overlay_plts/",ends_with='.png')
+        MoveFiles(cwd+"/energies/overlay_plts/",ends_with='.png')
     else:
         pass
 print("Done makeing overlay plots!")

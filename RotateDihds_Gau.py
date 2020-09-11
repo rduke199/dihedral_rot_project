@@ -19,7 +19,6 @@ from rdkit.Chem import AllChem
 from rdkit.Chem.rdMolTransforms import SetDihedralDeg
 from rdkit.Chem.rdmolfiles import MolToXYZBlock
 
-
 def MakesGauInputs(mol_file,dihed_atoms_file,w,num_conform=19):
     """
     Creates Gaussian input files in its own folder for mol_file structues that
@@ -64,6 +63,44 @@ def MakesGauInputs(mol_file,dihed_atoms_file,w,num_conform=19):
 
     print("Torsion Gaussian input files for {} finsihed!".format(molecule_name))
 
+def RunMakeGauInputs(home,i):
+    wt_mol_path = os.path.join(home,'wtuning',i)
+    rd_mol_path = os.path.join(home,'rotated_dihed',i)
+    if os.path.isdir(wt_mol_path) and not os.path.isdir(rd_mol_path):
+        #set up rotated_dihed filing system
+        os.chdir(wt_mol_path)
+        os.mkdir(rd_mol_path)
+        try:
+            subprocess.call('cp *_opt_0.log output.log ../../rotated_dihed/{}'.format(i),shell=True)
+            os.chdir(os.path.join(rd_mol_path))
+            subprocess.call('mv {}_dihed.txt .'.format(rd_mol_path),shell=True)
+            normal = 1
+        except:
+            print("opuput.log or opt_0.log file not found for {}. Omega tuning optimization may not have completed!".format(i))
+            normal = 0
+
+        #create gaussian input files for all degree rotations and run optimizations
+        if normal == 1:
+            os.chdir(rd_mol_path)
+            with open('output.log','r') as fn:
+                w_data = fn.readlines()[-2].split()[1]
+                w = "0{}".format(w_data.split('.')[1])
+            dihed_atoms_file = i+'_dihed.txt'
+            MakesGauInputs('{}_opt_0.log'.format(i),dihed_atoms_file,w)
+            print("Gaussian input files made for {}!".format(i))
+            degs = os.listdir(rd_mol_path)
+            for d in degs:
+                dpath = os.path.join(rd_mol_path,d)
+                if os.path.isdir(dpath):
+                    os.chdir(dpath)
+                    RunJob('rot{}'.format(d[5:]),"g16 {}.gjf".format(d))
+                    print("Gaussian jobs sumbitted for {}!".format(d))
+                else:
+                    pass
+        else:
+            pass
+        os.chdir(home+"/wtuning")
+
 def RunJob(job_name,job):
     """
     Write runfile for and submit any SLURM job. job_name and job should each be a string.
@@ -74,7 +111,7 @@ def RunJob(job_name,job):
         fh.writelines("#SBATCH -t 14-00:00:00\n")
         fh.writelines("#SBATCH --job-name=%s\n" % job_name)
         fh.writelines("#SBATCH -N 1\n")
-        fh.writelines("#SBATCH -n 32\n")
+        fh.writelines("#SBATCH -n 8\n")
         fh.writelines("#SBATCH -p SKY32M192_L\n")
         fh.writelines("#SBATCH --account=col_cmri235_uksr\n")
         fh.writelines("#SBATCH --mail-type=ALL\n")
@@ -101,61 +138,11 @@ def MoveFiles(destination,starts_with="",ends_with=""):
         if i.startswith(starts_with) and i.endswith(ends_with):
             shutil.move(i,destination+i)
 
-def FuncAllFiles(func,starts_with="",ends_with=""):
-    """
-    Runs all files that start/end with a certain string through a function
-    """
-    for i in os.listdir(os.getcwd()):
-        if i.startswith(starts_with) and i.endswith(ends_with):
-            func(i)
-
 home = os.getcwd()
-
 os.chdir(home+"/wtuning")
 for i in os.listdir(os.getcwd()):
-    i_path = os.path.join(home,"wtuning",i)
-    if os.path.isdir(i_path):
-        os.chdir(i_path)
-        os.mkdir("{}/rotated_dihed/{}/".format(home,i))
-        try:
-            subprocess.call('cp *_opt_0.log output.log ../../rotated_dihed/{}'.format(i),shell=True)
-            os.chdir(home+"/rotated_dihed/")
-            MoveFiles("{}/rotated_dihed/{}/".format(home,i),starts_with=str(i[:-3]),ends_with='_dihed.txt')
-            normal = 1
-        except:
-            print("opuput.log or opt_0.log file not found for {}. Omega tuning optimization may not have completed!".format(i))
-            normal = 0
-
-        if normal == 1:
-            os.chdir("{}/rotated_dihed/{}/".format(home,i))
-            with open('output.log','r') as fn:
-                w_data = fn.readlines()[-2].split()[1]
-                w = "0{}".format(w_data.split('.')[1])
-            dihed_atoms_file = i+'_dihed.txt'
-            print(dihed_atoms_file)
-            MakesGauInputs('{}_opt_0.log'.format(i),dihed_atoms_file,w)
-            print("Gaussian input files made for {}!".format(i))
-        else:
-            continue
-        os.chdir(home+"/wtuning")
-
-rd = os.path.join(home,'rotated_dihed')
-os.chdir(rd)
-mols = os.listdir(rd)
-for m in mols:
-    mpath = os.path.join(rd,m)
-    if os.path.isdir(mpath):
-    	os.chdir(mpath)
-    	degs = os.listdir(mpath)
-    	for d in degs:
-            dpath = os.path.join(rd,m,d)
-            if os.path.isdir(dpath):
-                os.chdir(dpath)
-                RunJob('gau{}'.format(d[5:]),"g16 {}.gjf".format(d))
-                print("Gaussian jobs sumbitted for {}!".format(d))
-            else:
-                pass
-            os.chdir(mpath)
-    else:
-        pass
-    os.chdir(rd)
+    try:
+        RunMakeGauInputs(home,i)
+    except:
+        print('Error. Gaussian inputs for {} were not made.'.format(i))
+        continue

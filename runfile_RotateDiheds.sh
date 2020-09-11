@@ -20,4 +20,4 @@ echo "Job $SLURM_JOB_ID running on SLURM NODELIST: $SLURM_NODELIST "
 source $(conda info --base)/etc/profile.d/conda.sh
 conda activate myenv
 
-python RotateDihedrals.py
+python RotateDihds_Gau.py
