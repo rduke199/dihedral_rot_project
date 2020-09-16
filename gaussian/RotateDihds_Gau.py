@@ -89,46 +89,9 @@ def RunMakeGauInputs(home,i):
             MakesGauInputs('{}_opt_0.log'.format(i),dihed_atoms_file,w)
             print("Gaussian input files made for {}!".format(i))
             degs = os.listdir(rd_mol_path)
-            for d in degs:
-                dpath = os.path.join(rd_mol_path,d)
-                if os.path.isdir(dpath):
-                    os.chdir(dpath)
-                    RunJob('rot{}'.format(d[5:]),"g16 {}.gjf".format(d))
-                    print("Gaussian jobs sumbitted for {}!".format(d))
-                else:
-                    pass
         else:
             pass
         os.chdir(home+"/wtuning")
-
-def RunJob(job_name,job):
-    """
-    Write runfile for and submit any SLURM job. job_name and job should each be a string.
-    """
-    runfile = os.path.join(os.getcwd(),"%s.job" %job_name)
-    with open(runfile,"w+") as fh:
-        fh.writelines("#!/bin/bash\n")
-        fh.writelines("#SBATCH -t 14-00:00:00\n")
-        fh.writelines("#SBATCH --job-name=%s\n" % job_name)
-        fh.writelines("#SBATCH -N 1\n")
-        fh.writelines("#SBATCH -n 8\n")
-        fh.writelines("#SBATCH -p SKY32M192_L\n")
-        fh.writelines("#SBATCH --account=col_cmri235_uksr\n")
-        fh.writelines("#SBATCH --mail-type=ALL\n")
-        fh.writelines("#SBATCH --mail-user=rdu230@uky.edu\n")
-        fh.writelines("#SBATCH --error=SLURM_JOB_%j.err\n")
-        fh.writelines("#SBATCH --output=SLURM_JOB_%j.out\n" )
-
-        fh.writelines("ulimit -u 32768\n")
-        fh.writelines("module load ccs/gaussian/g16-A.03/g16-sandybridge\n")
-        fh.writelines('echo "Job $SLURM_JOB_ID running on SLURM NODELIST: $SLURM_NODELIST "\n')
-        fh.writelines(". ~/.bashrc\n")
-        fh.writelines("source $(conda info --base)/etc/profile.d/conda.sh\n")
-        fh.writelines("conda activate myenv\n")
-
-        fh.writelines(job)
-
-    os.system("sbatch %s" %runfile)
 
 def MoveFiles(destination,starts_with="",ends_with=""):
     """
