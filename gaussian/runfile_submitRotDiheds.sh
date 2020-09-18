@@ -28,7 +28,7 @@ do
 			cd ${d}
 			for file in ./
 			do
-				if [[ ${file: -4} == ".log" ]]; then break 2; fi
+				if [[ ${file: -3} == "deg" ]]; then break 2; fi
 			done
 			fn="${d%?}.gjf"
 			g16 ${fn}
