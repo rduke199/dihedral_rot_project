@@ -2,7 +2,7 @@
 #SBATCH -t 14-00:00:00   			      #Time for the job to run
 #SBATCH --job-name=submitRotDiheds           #Name of the job
 #SBATCH -N 1 	        			       	#Number of nodes required
-#SBATCH -n 32				                #Number of cores needed for the job
+#SBATCH -n 8				                #Number of cores needed for the job
 #SBATCH -p SKY32M192_L
 #SBATCH --account=col_cmri235_uksr  #Name of account to run under
 
@@ -32,6 +32,8 @@ do
 			done
 			fn="${d%?}.gjf"
 			g16 ${fn}
+			echo ${d}
+			rm *.job
 			cd ..
 		done
 		cd ..
