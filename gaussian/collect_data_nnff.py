@@ -11,7 +11,7 @@ def MakeJSON(mol_dir,json_file):
     degree of rotation and places those into  json_file.
     """
     mol_name = str(mol_dir.split('/')[-1])
-    degree = str(mol_name[-3])
+    degree = str((mol_name.split('_')[-1])[:-3])
     energy = 0
     mol_xyz = 0
     try:
@@ -29,12 +29,14 @@ def MakeJSON(mol_dir,json_file):
     if energy == 0 or mol_xyz == 0:
         print("Error! Data NOT collected for {}. Energy calculations for dihedral rotations may not have finished!".format(mol_name))
     else:
+        print(degree)
         json_data = {
             "molecule_name" : mol_name,
             "degree" : degree,
             "xyz" : mol_xyz,
             "energy" : energy
         }
+        print(json_data)
         with open(json_file,'w+') as fn:
             json.dump(json_data, fn)
         print("Data collected for {}".format(d))
