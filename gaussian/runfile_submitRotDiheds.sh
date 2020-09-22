@@ -10,32 +10,15 @@
 #SBATCH --mail-user rdu230@uky.edu	#Where to send email
 #SBATCH --error=SLURM_submitRotDiheds_%j.err		#Name of error file
 #SBATCH --output=SLURM_submitRotDiheds_%j.out 	#Name of output file
-#SBATCH --array=1-100%30
+#SBATCH --array=1-600%30
 
 module load ccs/gaussian/g16-A.03/g16-sandybridge
-ulimit -u 32768
-echo "Job $SLURM_JOB_ID running on SLURM NODELIST: $SLURM_NODELIST "
+ulimit -s unlimited
+ulimit -l unlimited
+export OMP_NUM_THREADS=1
 
-home=$(pwd)
-
-cd rotated_dihed
-for m in mols*/
-do
-	if [ -d "${m}" ]; then
-		cd ${m}
-		for d in mols*deg/
-		do
-			cd ${d}
-			for file in ./
-			do
-				if [[ ${file: -3} == "deg" ]]; then break 2; fi
-			done
-			fn="${d%?}.gjf"
-			g16 ${fn}
-			echo ${d}
-			rm *.job
-			cd ..
-		done
-		cd ..
-	fi
-done
+line=$(echo $SLURM_ARRAY_TASK_ID )
+runfolder=$(sed -n "$line"p folders_to_run.txt)
+echo $runfolder
+cd $runsfolder
+g16 *.gjf
