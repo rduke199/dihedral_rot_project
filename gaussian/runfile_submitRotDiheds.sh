@@ -20,5 +20,5 @@ export OMP_NUM_THREADS=1
 line=$(echo $SLURM_ARRAY_TASK_ID )
 runfolder=$(sed -n "$line"p folders_to_run.txt)
 echo $runfolder
-cd $runsfolder
+cd $runfolder
 g16 *.gjf

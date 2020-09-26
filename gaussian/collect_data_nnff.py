@@ -19,9 +19,14 @@ def MakeJSON(mol_dir,json_file):
             gen = [x for x in os.listdir(os.getcwd()) if x.endswith('.log')]
             for mol_file in gen:
                 with open(mol_file) as fn:
-                    for line in fn:
-                        if re.search(r'SCF Done',line):
-                            energy = line.split()[4]
+                    normal = 0
+                    for line in mol_file:
+                        if re.search('Normal termination', line):
+                            normal = 1
+                        if re.search('SCF Done', line):
+                            possible_E = line.split()[4]
+                    if normal == 1:
+                        Energy = possible_E
                 mol_pymat = Molecule.from_file(mol_file)
                 mol_xyz = mol_pymat.to(fmt="xyz")
     except:
@@ -34,7 +39,7 @@ def MakeJSON(mol_dir,json_file):
             "molecule_name" : mol_name,
             "degree" : degree,
             "xyz" : mol_xyz,
-            "energy" : energy
+            "energy (Hartrees)" : energy
         }
         print(json_data)
         with open(json_file,'w+') as fn:
