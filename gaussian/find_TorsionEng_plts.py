@@ -25,23 +25,23 @@ def FindTorsionEnergies():
 				if os.path.isdir(d):
 					dpath = os.path.join(home,m,d)
 					os.chdir(dpath)
-					try:
-						gen = [x for x in os.listdir(os.getcwd()) if x.endswith('.log')]
-						for log_file in gen:
-							normal = 0
-							with open(log_file) as fn:
-								for line in mol_file:
-									if re.search('Normal termination', line):
-									    normal = 1
-									if re.search('SCF Done', line):
-									    eneregy = line.split()[4]
-							if normal == 1:
-								with open('{}/energies/energies_{}.cvs'.format(cwd,m),'a') as fout:
-									fout.write(d.split('_')[-1][:-3] + ',' + eneregy + '\n')
-						print("Dihedral rotations energies collected for {}!".format(d))
-					except:
-						print(".log file not found for {}. Energy calculations for dihedral rotations did not finish!".format(d))
-						continue
+					# try:
+					gen = [x for x in os.listdir(os.getcwd()) if x.endswith('.log')]
+					for log_file in gen:
+						normal = 0
+						with open(log_file) as fn:
+							for line in log_file:
+								if re.search('Normal termination', line):
+								    normal = 1
+								if re.search('SCF Done', line):
+								    eneregy = line.split()[4]
+						if normal == 1:
+							with open('{}/energies/energies_{}.cvs'.format(cwd,m),'a') as fout:
+								fout.write(d.split('_')[-1][:-3] + ',' + eneregy + '\n')
+								print("Dihedral rotations energies collected for {}!".format(d))
+					# except:
+					# 	print(".log file not found for {}. Energy calculations for dihedral rotations did not finish!".format(d))
+					# 	continue
 				os.chdir(mpath)
 		os.chdir(home)
 
@@ -162,13 +162,16 @@ for f in os.listdir(os.getcwd()):
 			MakeTorsionPlot(f)
 		except:
 			pass
-os.mkdir('plots')
+try:
+	os.mkdir(cwd+"/energies/plots")
+	os.mkdir(cwd+"/energies/overlay_plts")
+except:
+	pass
 MoveFiles(cwd+'/energies/plots/',starts_with="torsionE")
 print("Done making potential energy plots!")
 
 os.chdir(cwd+"/energies")
 SortEnergies()
-os.mkdir(cwd+"/energies/overlay_plts")
 os.chdir(cwd+"/energies/sorted_energies/")
 for mol in os.listdir(os.getcwd()):
     if mol.startswith("allenergies_"):

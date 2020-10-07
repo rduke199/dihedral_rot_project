@@ -16,10 +16,11 @@ for m in mols:
                 files = os.listdir(dpath)
                 for f in files:
                     fpath = os.path.join(home,m,d,f)
+                    unit_num = f[8]
                     if f.endswith(".log"):
                         break
-                    else:
-                        txt_file = cwd+"/folders_to_run.txt"
+                    if f.endswith(".gjf"):
+                        txt_file = '{}/folders_to_run{}.txt'.format(cwd,unit_num)
                         with open(txt_file, "a+") as fn:
                             fn.write(dpath+"\n")
                 os.chdir(mpath)
