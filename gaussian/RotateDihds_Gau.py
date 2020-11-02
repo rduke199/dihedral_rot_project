@@ -34,6 +34,7 @@ def MakesGauInputs(mol_file,dihed_atoms_file,w,num_conform=19):
     data = open(dihed_atoms_file,'r').readlines()
     dihedral1 = data[0].split(',')[0]
     dihedral2 = data[0].split(',')[1]
+    data.close()
 
     d1atom1_num = int(dihedral1.split()[0])
     d1atom2_num = int(dihedral1.split()[1])
@@ -51,7 +52,7 @@ def MakesGauInputs(mol_file,dihed_atoms_file,w,num_conform=19):
             fout.write(str(MolToXYZBlock(molecule)))
         mol = Molecule.from_file(dir_name+'temp.xyz')
         os.remove(dir_name+'temp.xyz')
-        gau = GaussianInput(mol=mol,charge=0,spin_multiplicity=1,functional='uLC-wPBE',basis_set='cc-pVDZ',route_parameters={"iop(3/107={}, 3/108={})".format(w,w):"","opt":"modredundant"},link0_parameters={'%mem':'5GB','%nproc':'1','%chk':'{}.chk'.format('{}.chk'.format(file_name.split('/')[-1]))})
+        gau = GaussianInput(mol=mol,charge=0,spin_multiplicity=1,functional='uLC-wPBE',basis_set='cc-pVDZ',route_parameters={"iop(3/107={}, 3/108={})".format(w,w):"","opt":"modredundant"},link0_parameters={'%mem':'5GB','%chk':'{}.chk'.format('{}.chk'.format(file_name.split('/')[-1]))})
         gjf_file = gau.write_file(dir_name+'temp.gjf')
 
         with open(dir_name+'temp.gjf') as temp:

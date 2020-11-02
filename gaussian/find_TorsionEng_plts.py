@@ -25,23 +25,22 @@ def FindTorsionEnergies():
 				if os.path.isdir(d):
 					dpath = os.path.join(home,m,d)
 					os.chdir(dpath)
-					# try:
 					gen = [x for x in os.listdir(os.getcwd()) if x.endswith('.log')]
 					for log_file in gen:
 						normal = 0
 						with open(log_file) as fn:
-							for line in log_file:
+							for line in fn:
 								if re.search('Normal termination', line):
-								    normal = 1
+									normal = 1
 								if re.search('SCF Done', line):
 								    eneregy = line.split()[4]
 						if normal == 1:
 							with open('{}/energies/energies_{}.cvs'.format(cwd,m),'a') as fout:
 								fout.write(d.split('_')[-1][:-3] + ',' + eneregy + '\n')
 								print("Dihedral rotations energies collected for {}!".format(d))
-					# except:
-					# 	print(".log file not found for {}. Energy calculations for dihedral rotations did not finish!".format(d))
-					# 	continue
+						if normal == 0:
+							pass
+							# print(".log file not found for {}. Energy calculations for dihedral rotations did not finish!".format(d))
 				os.chdir(mpath)
 		os.chdir(home)
 
@@ -152,15 +151,17 @@ def MoveFiles(destination,starts_with="",ends_with=""):
 			shutil.move(i,destination+i)
 
 cwd = os.getcwd()
-FindTorsionEnergies()
+# FindTorsionEnergies()
 print("Done gathering torsion energies!")
 
 os.chdir(cwd+'/energies')
 for f in os.listdir(os.getcwd()):
 	if f.startswith("energies"):
 		try:
-			MakeTorsionPlot(f)
+			# MakeTorsionPlot(f)
+			pass
 		except:
+			print("Error making torsion plot for {}.".format(f))
 			pass
 try:
 	os.mkdir(cwd+"/energies/plots")
@@ -174,11 +175,10 @@ os.chdir(cwd+"/energies")
 SortEnergies()
 os.chdir(cwd+"/energies/sorted_energies/")
 for mol in os.listdir(os.getcwd()):
-    if mol.startswith("allenergies_"):
-        print(mol)
-        os.chdir("{}/energies/sorted_energies/{}".format(cwd,mol))
-        OverlayPlts()
-        MoveFiles(cwd+"/energies/overlay_plts/",ends_with='.png')
-    else:
-        pass
+	if mol.startswith("allenergies_"):
+		print(mol)
+		os.chdir("{}/energies/sorted_energies/{}".format(cwd,mol))
+		OverlayPlts()
+	else:
+	    pass
 print("Done makeing overlay plots!")

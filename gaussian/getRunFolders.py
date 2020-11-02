@@ -3,25 +3,26 @@ import os
 cwd = os.getcwd()
 os.chdir('rotated_dihed')
 home = os.getcwd()
-mols = os.listdir(home)
+mols = [m for m in os.listdir(home) if os.path.isdir(m)]
 for m in mols:
-    if os.path.isdir(m):
-        mpath = os.path.join(home,m)
+    mpath = os.path.join(home,m)
+    os.chdir(mpath)
+    degs = [d for d in os.listdir(mpath) if os.path.isdir(d)]
+    for d in degs:
+        dpath = os.path.join(home,m,d)
+        os.chdir(dpath)
+        log_files = [x for x in os.listdir(dpath) if x.endswith('.log')]
+        gjf_files = [x for x in os.listdir(dpath) if x.endswith('.gjf')]
+        if len(log_files) == 1:
+            continue
+        if len(gjf_files) == 0:
+            print("Error. {} does not contain a gjf file.".format(d))
+            continue
+        else:
+            unit_num = gjf_files[0][8]
+            txt_file = '{}/test/folders_to_run{}.txt'.format(cwd,unit_num)
+            with open(txt_file, "a+") as fn:
+                fn.write(dpath+"\n")
         os.chdir(mpath)
-        degs = os.listdir(mpath)
-        for d in degs:
-            if os.path.isdir(d):
-                dpath = os.path.join(home,m,d)
-                os.chdir(dpath)
-                files = os.listdir(dpath)
-                for f in files:
-                    fpath = os.path.join(home,m,d,f)
-                    unit_num = f[8]
-                    if f.endswith(".log"):
-                        break
-                    if f.endswith(".gjf"):
-                        txt_file = '{}/folders_to_run{}.txt'.format(cwd,unit_num)
-                        with open(txt_file, "a+") as fn:
-                            fn.write(dpath+"\n")
-                os.chdir(mpath)
-        os.chdir(home)
+        break
+    os.chdir(home)
