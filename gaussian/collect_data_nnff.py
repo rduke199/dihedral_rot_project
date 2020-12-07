@@ -20,7 +20,7 @@ def MakeJSON(mol_dir,json_file):
             for mol_file in gen:
                 with open(mol_file) as fn:
                     normal = 0
-                    for line in mol_file:
+                    for line in fn:
                         if re.search('Normal termination', line):
                             normal = 1
                         if re.search('SCF Done', line):

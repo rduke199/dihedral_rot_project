@@ -1,4 +1,5 @@
 import os
+import re
 
 cwd = os.getcwd()
 os.chdir('rotated_dihed')
@@ -14,7 +15,16 @@ for m in mols:
         log_files = [x for x in os.listdir(dpath) if x.endswith('.log')]
         gjf_files = [x for x in os.listdir(dpath) if x.endswith('.gjf')]
         if len(log_files) == 1:
-            continue
+            normal = 0
+            with open(log_files[0]) as fn:
+                last_line = fn.readlines()[-1]
+                if re.search('Normal termination', last_line):
+                    normal = 1
+            if normal == 0:
+                print("Error. {} dihedral rotation did not finish.".format(d))
+                pass
+            else:
+                continue
         if len(gjf_files) == 0:
             print("Error. {} does not contain a gjf file.".format(d))
             continue
@@ -23,6 +33,7 @@ for m in mols:
             txt_file = '{}/test/folders_to_run{}.txt'.format(cwd,unit_num)
             with open(txt_file, "a+") as fn:
                 fn.write(dpath+"\n")
+            continue
         os.chdir(mpath)
         break
     os.chdir(home)

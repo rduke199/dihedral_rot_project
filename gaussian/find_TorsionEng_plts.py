@@ -40,7 +40,7 @@ def FindTorsionEnergies():
 								print("Dihedral rotations energies collected for {}!".format(d))
 						if normal == 0:
 							pass
-							# print(".log file not found for {}. Energy calculations for dihedral rotations did not finish!".format(d))
+							print(".log file not found for {}. Energy calculations for dihedral rotations did not finish!".format(d))
 				os.chdir(mpath)
 		os.chdir(home)
 
@@ -107,7 +107,7 @@ def MakeTorsionPlot(energy_file):
 	plt.ylabel("energy (Hartrees)")
 	plt.title("{} torsion energy".format(mol_name))
 	plt.savefig('torsionE_plt_{}.png'.format(mol_name),dpi=300)
-	plt.close()
+	plt.close('all')
 
 def OverlayPlts():
 	"""
@@ -140,7 +140,7 @@ def OverlayPlts():
 	plt.title("{} torsion energy".format(mol_name))
 	plt.legend()
 	plt.savefig('overlay_plt_{}.png'.format(mol_name),dpi=300)
-	plt.close()
+	plt.close('all')
 
 def MoveFiles(destination,starts_with="",ends_with=""):
 	"""
@@ -151,14 +151,14 @@ def MoveFiles(destination,starts_with="",ends_with=""):
 			shutil.move(i,destination+i)
 
 cwd = os.getcwd()
-# FindTorsionEnergies()
+FindTorsionEnergies()
 print("Done gathering torsion energies!")
 
 os.chdir(cwd+'/energies')
 for f in os.listdir(os.getcwd()):
 	if f.startswith("energies"):
 		try:
-			# MakeTorsionPlot(f)
+			MakeTorsionPlot(f)
 			pass
 		except:
 			print("Error making torsion plot for {}.".format(f))
@@ -176,9 +176,13 @@ SortEnergies()
 os.chdir(cwd+"/energies/sorted_energies/")
 for mol in os.listdir(os.getcwd()):
 	if mol.startswith("allenergies_"):
-		print(mol)
-		os.chdir("{}/energies/sorted_energies/{}".format(cwd,mol))
-		OverlayPlts()
+		try:
+			os.chdir("{}/energies/sorted_energies/{}".format(cwd,mol))
+			OverlayPlts()
+			MoveFiles(cwd+'/energies/overlay_plts/',starts_with="overlay_plt")
+		except:
+			print("Error making overlay plot for {}.".format(mol))
+			continue
 	else:
 	    pass
 print("Done makeing overlay plots!")
