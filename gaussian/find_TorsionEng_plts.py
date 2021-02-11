@@ -29,24 +29,26 @@ def FindTorsionEnergies():
 					for log_file in gen:
 						normal = 0
 						with open(log_file) as fn:
-							for line in fn:
-								if re.search('Normal termination', line):
-									normal = 1
-								if re.search('SCF Done', line):
-								    eneregy = line.split()[4]
+			                last_line = log_fn[-1]
+			                if re.search('Normal termination', last_line):
+			                    for line in log_fn:
+			                        if re.search(' Optimized Parameters',line):
+										normal = 1
+									if re.search('SCF Done', line):
+									    eneregy = line.split()[4]
 						if normal == 1:
 							with open('{}/energies/energies_{}.cvs'.format(cwd,m),'a') as fout:
 								fout.write(d.split('_')[-1][:-3] + ',' + eneregy + '\n')
 								print("Dihedral rotations energies collected for {}!".format(d))
 						if normal == 0:
 							pass
-							print(".log file not found for {}. Energy calculations for dihedral rotations did not finish!".format(d))
+							print("Energy calculations for {} dihedral rotations did not finish!".format(d))
 				os.chdir(mpath)
 		os.chdir(home)
 
 def SortEnergies():
     """
-    In directory with all energie .cvs files, this copies all energies files into
+    In directory with allenergies.cvs files, this copies all energies files into
     a new "sorted_energies" directory. This contains directories for each unique
     monomer base which each contains energies files for all polymer lengths of
     this monomer base.

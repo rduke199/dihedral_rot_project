@@ -50,18 +50,12 @@ def MakeJSON(mol_dir,json_file):
 cwd = os.getcwd()
 
 home = os.path.join(cwd,'rotated_dihed')
-mols = os.listdir(home)
-os.chdir(home)
+mols = [m for m in os.listdir(home) if os.path.isdir(os.path.join(home,m))]
 for m in mols:
-    if os.path.isdir(m):
-        mpath = os.path.join(home,m)
-        os.chdir(mpath)
-        degs = os.listdir(mpath)
-        for d in degs:
-            if os.path.isdir(d):
-                dpath = os.path.join(home,m,d)
-                os.chdir(dpath)
-                json_file = "{}/jsons/{}.json".format(cwd,d)
-                MakeJSON(dpath,json_file)
-            os.chdir(mpath)
-    os.chdir(home)
+    mpath = os.path.join(home,m)
+    degs = [d for d in os.listdir(mpath) if os.path.isdir(os.path.join(mpath,d))]
+    for d in degs:
+        dpath = os.path.join(home,m,d)
+        json_file = "{}/jsons/{}.json".format(cwd,d)
+        if not os.path.isfile(json_file):
+            MakeJSON(dpath,json_file)
