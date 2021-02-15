@@ -16,9 +16,10 @@ def MakeJSON(mol_dir,json_file):
     mol_xyz = 0
     try:
         for f in mol_dir:
-            gen = [x for x in os.listdir(os.getcwd()) if x.endswith('.log')]
+            gen = [x for x in os.listdir(mol_dir) if x.endswith('.log')]
             for mol_file in gen:
-                with open(mol_file) as fn:
+                mol_file_path = os.path.join(mol_dir, mol_file)
+                with open(mol_file_path) as fn:
                     normal = 0
                     for line in fn:
                         if re.search('Normal termination', line):
@@ -26,8 +27,8 @@ def MakeJSON(mol_dir,json_file):
                         if re.search('SCF Done', line):
                             possible_E = line.split()[4]
                     if normal == 1:
-                        Energy = possible_E
-                mol_pymat = Molecule.from_file(mol_file)
+                        energy = possible_E
+                mol_pymat = Molecule.from_file(mol_file_path)
                 mol_xyz = mol_pymat.to(fmt="xyz")
     except:
         print("Error! Data NOT collected for {}. Energy calculations for dihedral rotations may not have finished!".format(mol_name))
@@ -50,18 +51,12 @@ def MakeJSON(mol_dir,json_file):
 cwd = os.getcwd()
 
 home = os.path.join(cwd,'rotated_dihed')
-mols = os.listdir(home)
-os.chdir(home)
+mols = [m for m in os.listdir(home) if os.path.isdir(os.path.join(home,m))]
 for m in mols:
-    if os.path.isdir(m):
-        mpath = os.path.join(home,m)
-        os.chdir(mpath)
-        degs = os.listdir(mpath)
-        for d in degs:
-            if os.path.isdir(d):
-                dpath = os.path.join(home,m,d)
-                os.chdir(dpath)
-                json_file = "{}/jsons/{}.json".format(cwd,d)
-                MakeJSON(dpath,json_file)
-            os.chdir(mpath)
-    os.chdir(home)
+    mpath = os.path.join(home,m)
+    degs = [d for d in os.listdir(mpath) if os.path.isdir(os.path.join(mpath,d))]
+    for d in degs:
+        dpath = os.path.join(home,m,d)
+        json_file = "{}/jsons_nnff/{}.json".format(cwd,d)
+        if not os.path.isfile(json_file):
+            MakeJSON(dpath,json_file)

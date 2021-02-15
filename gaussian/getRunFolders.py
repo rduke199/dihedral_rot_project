@@ -17,14 +17,19 @@ for m in mols:
         if len(log_files) == 1:
             normal = 0
             with open(log_files[0]) as fn:
-                last_line = fn.readlines()[-1]
+                log_fn = fn.readlines()
+                last_line = log_fn[-1]
                 if re.search('Normal termination', last_line):
-                    normal = 1
-            if normal == 0:
-                print("Error. {} dihedral rotation did not finish.".format(d))
-                pass
-            else:
-                continue
+                    for line in log_fn:
+                        if re.search(' Optimized Parameters',line):
+                            normal = 1
+                            continue
+                    if normal == 0:
+                        print("Error. {} dihedral rotation had a normal termination but did not have optimized parameters.".format(d))
+                    else:
+                        continue
+                else:
+                    print("Error. {} dihedral rotation did not have a normal termination.".format(d))
         if len(gjf_files) == 0:
             print("Error. {} does not contain a gjf file.".format(d))
             continue

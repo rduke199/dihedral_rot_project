@@ -99,7 +99,8 @@ def GenPolymers():
                 if r == 66:
                     smiles = h.replace('W',i[1][0]).replace('X',i[1][1]).replace('Y',i[0][0]).replace('Z',i[0][1])
                     XYZ = '{}-{}-{}-{}'.format(i[1][0],i[1][1],i[0][0],i[0][1]).replace('(','').replace(')','')
-                print(smiles)
+                with open(name+'.smi','a') as fout:
+                    fout.write(str(smiles))
                 mol = Chem.MolFromSmiles(smiles)
                 molH = AllChem.AddHs(mol)
                 #Name: 'mols_<ring type>_<#repeat units>_<polymer#>_<subs>'
@@ -176,13 +177,15 @@ os.mkdir('xyz')
 os.mkdir('gjf')
 os.mkdir('gau_output')
 os.mkdir('wtuning')
-os.mkdir('rotated_dihed')
+os.mkdir('diheds')
+os.mkdir('smiles')
 os.mkdir('energies')
 
 
 os.chdir(home+'/xyz')
 GenPolymers()
-MoveFiles(home+'/rotated_dihed/',ends_with='dihed.txt')
+MoveFiles(home+'/diheds/',ends_with='dihed.txt')
+MoveFiles(home+'/smiles/',ends_with='.smi')
 print("Done generating xyz")
 
 FuncAllFiles(XYZtoGJF,ends_with='.xyz')
@@ -194,7 +197,7 @@ for i in os.listdir(os.getcwd()):
     os.mkdir(home+'/gau_output/'+i[:-4])
     subprocess.call('cp {} {}/gau_output/{}/'.format(i,home,i[:-4]),shell=True)
     os.chdir(home+'/gau_output/'+i[:-4])
-    RunJob('gau{}'.format(i[5:12]),"g16 {}".format(i))
+    # RunJob('gau{}'.format(i[5:12]),"g16 {}".format(i))
     os.chdir(home+'/gjf')
     print("Submitted {} gaussian job.".format(i))
 print("Done submitting Gaussian job")

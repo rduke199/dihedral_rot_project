@@ -12,6 +12,9 @@
 #SBATCH --output=SLURM_submitRotDiheds_%j.out 	#Name of output file
 #SBATCH --array=1-600%30
 
+echo "Job $SLURM_JOB_ID running on SLURM NODELIST: $SLURM_NODELIST "
+echo "Job started at : $(date)"
+
 module load ccs/gaussian/g16-A.03/g16-sandybridge
 ulimit -s unlimited
 ulimit -l unlimited
@@ -21,4 +24,5 @@ line=$(echo $SLURM_ARRAY_TASK_ID )
 runfolder=$(sed -n "$line"p folders_to_run.txt)
 echo $runfolder
 cd $runfolder
-g16 *.gjf
+time g16 *.gjf
+echo "Job ended at : $(date)"
