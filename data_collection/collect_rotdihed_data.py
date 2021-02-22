@@ -1,6 +1,7 @@
 import os
 import re
 import json
+import warnings
 from pymatgen.core.structure import IMolecule
 from pymatgen.io.gaussian import GaussianOutput
 from ocelot.routines.conformerparser import pmgmol_to_rdmol
@@ -30,17 +31,19 @@ def runtime_from_log(logfile):
         runtime = 0
     return round(runtime, 3)
 
+
 def check_normal_optimization(log_file):
     with open(log_file) as fn:
-        last_line = fn[-1]
-        if re.search('Normal termination', last_line):
-            for line in fn:
-                if re.search(' Optimized Parameters', line):
-                    return True
-                else:
-                    raise UserWarning("Calculation terminated normally but did not sucessfully optimze parameters for {}".format(log_file))
-        else:
-            raise UserWarning("Termination error for {}".format(log_file))
+        data = fn.readlines()
+    last_line = data[-1]
+    if not re.search('Normal termination', last_line):
+        warnings.warn("Termination error for {}".format(log_file))
+    for line in data:
+        if re.search(' Optimized Parameters', line):
+            return True
+    warnings.warn("Calculation terminated normally but did not sucessfully optimze parameters for {}".format(log_file))
+    return False
+
 
 def make_json(mol_dir, json_file, omega_file=None):
     """
@@ -53,17 +56,23 @@ def make_json(mol_dir, json_file, omega_file=None):
     mol_smiles, omega = None, None
     if os.path.isfile(omega_file):
         with open(omega_file, 'r') as fn:
-            omega_data = fn.readlines()[-2].split()[1]
-            omega = "0{}".format(omega_data.split('.')[1])
-    for deg in os.listdir(mol_dir):
+            try:
+                omega_data = fn.readlines()[-1].split()[1]
+                omega = "0{}".format(omega_data.split('.')[1])
+            except IndexError:
+                print('Error. wtuning for {} may not have finished'.format(mol_name))
+                return None
+    deg_folders = [deg for deg in os.listdir(mol_dir) if os.path.isdir(os.path.join(mol_dir, deg))]
+    for deg in deg_folders:
         dpath = os.path.join(mol_dir, deg)
         if os.path.isdir(dpath):
+            degree = str((deg.split('_')[-1])[:-3])
             try:
                 log_fn = [x for x in os.listdir(dpath) if x.endswith('deg.log')][0]
                 log_path = os.path.join(dpath, log_fn)
             except IndexError:
                 print("Error. No log file for {} at {} degrees.".format(mol_name, degree))
-                break
+                continue
             if check_normal_optimization(log_path):
                 runtime = runtime_from_log(log_path)
                 mol = IMolecule.from_file(log_path)
@@ -79,8 +88,7 @@ def make_json(mol_dir, json_file, omega_file=None):
                     mol_smiles = pmgmol_to_rdmol(mol)[1]
             else:
                 print("Error. Optimization did not properly terminate for {} at {} degrees.".format(mol_name, degree))
-                break
-            degree = str((deg.split('_')[-1])[:-3])
+                continue
             xyz_dict[degree] = mol_xyz
             energy_dict[degree] = energy
             homo_dict[degree] = homo
