@@ -4,18 +4,10 @@ import numpy as np
 import subprocess
 import shutil
 
-import pymatgen
 from pymatgen.core import Molecule
 from pymatgen.io.gaussian import GaussianInput
 
-import ocelot
 from ocelot.routines.conformerparser import pmgmol_to_rdmol
-from ocelot.task.wtuning import WtuningJob
-from ocelot.task.confgen import ConfGen
-
-import rdkit
-from rdkit import Chem
-from rdkit.Chem import AllChem
 from rdkit.Chem.rdMolTransforms import SetDihedralDeg
 from rdkit.Chem.rdmolfiles import MolToXYZBlock
 
