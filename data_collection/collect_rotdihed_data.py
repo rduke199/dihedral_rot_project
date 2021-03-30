@@ -137,10 +137,10 @@ def main():
         json_file = "{}/{}.json".format(json_dir, mol)
         if os.path.isdir(mpath) and not os.path.isfile(json_file):
             omega_file = os.path.join(mpath, 'output.log')
-            # try:
-            make_json(mpath, json_file, omega_file=omega_file)
-            # except:
-            #     print("Error. Data not collected for {}".format(mol))
+            try:
+                make_json(mpath, json_file, omega_file=omega_file)
+            except:
+                print("Error. Data not collected for {}".format(mol))
 
     master_energy_file = os.path.join(json_dir, "master_energy.json")
     write_master_json(json_dir, master_energy_file, prop="energies")
@@ -156,6 +156,9 @@ def main():
 
     master_omega_file = os.path.join(json_dir, "master_omega.json")
     write_master_json(json_dir, master_omega_file, prop="tuned_omega")
+
+    master_structures_file = os.path.join(json_dir, "master_structures.json")
+    write_master_json(json_dir, master_structures_file, prop="structures")
 
 
 if __name__ == "__main__":
