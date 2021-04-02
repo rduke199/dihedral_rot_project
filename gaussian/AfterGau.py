@@ -5,7 +5,7 @@ import subprocess
 from rdkit import Chem
 from rdkit.Chem import AllChem
 from pymatgen.core import Molecule
-from pymatgen.io.gaussian import GaussianInput
+from pymatgen.io.gaussian import GaussianInput, GaussianOutput
 from itertools import combinations_with_replacement, product
 
 def FindEnergies():
@@ -19,14 +19,9 @@ def FindEnergies():
         os.chdir(dir_path)
         for i in os.listdir(dir_path):
             if i.endswith('.log'):
-                with open(i, 'r') as fn:
-                    LogFile = fn.readlines()
-                normal = 0
-                for line in LogFile:
-                    if re.search('Normal termination', line):
-                        normal = 1
-                    if re.search('SCF Done', line):
-                        Energy = line.split()[4]
+                mol = GaussianOutput(i)
+                if mol.normal_termination:
+                    Energy = mol.final_energy
                 if normal == 1:
                     with open(main_dir+'/table.txt','a') as fout:
                         fout.write(i + '\t' + Energy + '\n')
