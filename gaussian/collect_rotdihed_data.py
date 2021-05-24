@@ -30,6 +30,7 @@ def runtime_from_log(logfile):
         runtime = 0
     return round(runtime, 3)
 
+
 def check_normal_optimization(log_file):
     with open(log_file) as fn:
         last_line = fn[-1]
@@ -42,6 +43,18 @@ def check_normal_optimization(log_file):
         else:
             raise UserWarning("Termination error for {}".format(log_file))
 
+
+def find_omega(omega_file):
+    if os.path.isfile(omega_file):
+        with open(omega_file, 'r') as fn:
+            lines = fn.readlines()
+            for line in reversed(lines):
+                if re.search('new:', line):
+                    omega_data = line.split()[1]
+                    omega = "0{}".format(omega_data.split('.')[1])
+                    return omega
+
+
 def make_json(mol_dir, json_file, omega_file=None):
     """
     For a molecule directory, mol_dir, this finds the molecule_name, smiles, and tuned omega
@@ -51,10 +64,7 @@ def make_json(mol_dir, json_file, omega_file=None):
     mol_name = mol_dir.split('/')[-1]
     xyz_dict, energy_dict, homo_dict, lumo_dict, runtime_dict = {}, {}, {}, {}, {}
     mol_smiles, omega = None, None
-    if os.path.isfile(omega_file):
-        with open(omega_file, 'r') as fn:
-            omega_data = fn.readlines()[-2].split()[1]
-            omega = "0{}".format(omega_data.split('.')[1])
+    omega = find_omega(omega_file)
     for deg in os.listdir(mol_dir):
         dpath = os.path.join(mol_dir, deg)
         if os.path.isdir(dpath):
@@ -129,10 +139,10 @@ def main():
         json_file = "{}/{}.json".format(json_dir, mol)
         if os.path.isdir(mpath) and not os.path.isfile(json_file):
             omega_file = os.path.join(mpath, 'output.log')
-            # try:
-            make_json(mpath, json_file, omega_file=omega_file)
-            # except:
-            #     print("Error. Data not collected for {}".format(mol))
+            try:
+                make_json(mpath, json_file, omega_file=omega_file)
+            except:
+                print("Error. Data not collected for {}".format(mol))
 
     master_energy_file = os.path.join(json_dir, "master_energy.json")
     write_master_json(json_dir, master_energy_file, prop="energies")
